@@ -173,9 +173,11 @@ public interface HystrixThreadPool {
             HystrixConcurrencyStrategy concurrencyStrategy = HystrixPlugins.getInstance().getConcurrencyStrategy();
             this.queueSize = properties.maxQueueSize().get();
 
-            this.metrics = HystrixThreadPoolMetrics.getInstance(threadPoolKey,
-                    concurrencyStrategy.getThreadPool(threadPoolKey, properties),
-                    properties);
+            this.metrics = HystrixThreadPoolMetrics.getInstance(
+                threadPoolKey,
+                concurrencyStrategy.getThreadPool(threadPoolKey, properties),
+                properties
+            );
             this.threadPool = this.metrics.getThreadPool();
             this.queue = this.threadPool.getQueue();
 

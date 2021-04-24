@@ -35,14 +35,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Abstract class for defining different behavior or implementations for concurrency related aspects of the system with default implementations.
+ * Abstract class for defining different behavior or implementations for concurrency
+ * related aspects of the system with default implementations.
  * <p>
- * For example, every {@link Callable} executed by {@link HystrixCommand} will call {@link #wrapCallable(Callable)} to give a chance for custom implementations to decorate the {@link Callable} with
- * additional behavior.
+ * For example, every {@link Callable} executed by {@link HystrixCommand}
+ * will call {@link #wrapCallable(Callable)} to give a chance for custom implementations
+ * to decorate the {@link Callable} with additional behavior.
  * <p>
- * When you implement a concrete {@link HystrixConcurrencyStrategy}, you should make the strategy idempotent w.r.t ThreadLocals.
+ * When you implement a concrete {@link HystrixConcurrencyStrategy},
+ * you should make the strategy idempotent w.r.t ThreadLocals.
  * Since the usage of threads by Hystrix is internal, Hystrix does not attempt to apply the strategy in an idempotent way.
- * Instead, you should write your strategy to work idempotently.  See https://github.com/Netflix/Hystrix/issues/351 for a more detailed discussion.
+ * Instead, you should write your strategy to work idempotently.
+ *
+ * See https://github.com/Netflix/Hystrix/issues/351 for a more detailed discussion.
  * <p>
  * See {@link HystrixPlugins} or the Hystrix GitHub Wiki for information on configuring plugins: <a
  * href="https://github.com/Netflix/Hystrix/wiki/Plugins">https://github.com/Netflix/Hystrix/wiki/Plugins</a>.
@@ -75,7 +80,13 @@ public abstract class HystrixConcurrencyStrategy {
      *            {@code BlockingQueue<Runnable>} as provided by {@link #getBlockingQueue(int)}
      * @return instance of {@link ThreadPoolExecutor}
      */
-    public ThreadPoolExecutor getThreadPool(final HystrixThreadPoolKey threadPoolKey, HystrixProperty<Integer> corePoolSize, HystrixProperty<Integer> maximumPoolSize, HystrixProperty<Integer> keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
+    public ThreadPoolExecutor getThreadPool(final HystrixThreadPoolKey threadPoolKey,
+            HystrixProperty<Integer> corePoolSize,
+            HystrixProperty<Integer> maximumPoolSize,
+            HystrixProperty<Integer> keepAliveTime,
+            TimeUnit unit,
+            BlockingQueue<Runnable> workQueue
+    ) {
         final ThreadFactory threadFactory = getThreadFactory(threadPoolKey);
 
         final int dynamicCoreSize = corePoolSize.get();
@@ -91,6 +102,12 @@ public abstract class HystrixConcurrencyStrategy {
         }
     }
 
+    /**
+     * 设置线程池Executor
+     * @param threadPoolKey
+     * @param threadPoolProperties
+     * @return
+     */
     public ThreadPoolExecutor getThreadPool(final HystrixThreadPoolKey threadPoolKey, HystrixThreadPoolProperties threadPoolProperties) {
         final ThreadFactory threadFactory = getThreadFactory(threadPoolKey);
 
@@ -115,6 +132,11 @@ public abstract class HystrixConcurrencyStrategy {
         }
     }
 
+    /**
+     * 根据线程池的key获取线程工厂
+     * @param threadPoolKey
+     * @return
+     */
     private static ThreadFactory getThreadFactory(final HystrixThreadPoolKey threadPoolKey) {
         if (!PlatformSpecific.isAppEngineStandardEnvironment()) {
             return new ThreadFactory() {
@@ -156,6 +178,7 @@ public abstract class HystrixConcurrencyStrategy {
          * Queuing results in added latency and would only occur when the thread-pool is full at which point there are latency issues
          * and rejecting is the preferred solution.
          */
+        // 最大的队列长度不大于0，选择SynchronousQueue
         if (maxQueueSize <= 0) {
             return new SynchronousQueue<Runnable>();
         } else {

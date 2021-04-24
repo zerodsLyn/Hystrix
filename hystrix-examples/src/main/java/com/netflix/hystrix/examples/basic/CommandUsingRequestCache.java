@@ -22,6 +22,10 @@ import org.junit.Test;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
+import rx.Observable;
+import rx.Observer;
+import rx.functions.Action1;
+import rx.functions.Func0;
 
 /**
  * Sample {@link HystrixCommand} showing how implementing the {@link #getCacheKey()} method
@@ -89,6 +93,81 @@ public class CommandUsingRequestCache extends HystrixCommand<Boolean> {
             } finally {
                 context.shutdown();
             }
+        }
+    }
+
+
+
+    public static void main(String[] args) {
+        HystrixRequestContext context = HystrixRequestContext.initializeContext();
+        try {
+            CommandUsingRequestCache command2a = new CommandUsingRequestCache(2);
+            command2a.execute();
+        } finally {
+            context.shutdown();
+        }
+    }
+
+    private static void demo0() {
+        Observable.defer(new Func0<Observable<String>>() {
+            @Override
+            public Observable<String> call() {
+                String name = Math.random() > 0.5 ? "小明" : "小贾";
+                return Observable.just(name);
+            }
+        }).subscribe(new Action1<String>() {
+            @Override
+            public void call(String s) {
+                System.out.println(s);
+            }
+        });
+    }
+
+    private static void demo2() {
+        String[] names = new String[] {"1", "2"};
+        Observable.from(names)
+            .subscribe(new Action1<String>() {
+                @Override
+                public void call(String name) {
+                    System.out.println(name);
+                }
+            });
+    }
+
+    private static void demo1() {
+        Observer<String> observer = new Observer<String>() {
+            @Override
+            public void onNext(String s) {
+                System.out.println("Item: " + s);
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Completed!");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                System.out.println("Error!");
+            }
+        };
+    }
+
+    public static void testWithCacheHits() {
+        HystrixRequestContext context = HystrixRequestContext.initializeContext();
+        try {
+            CommandUsingRequestCache command2a = new CommandUsingRequestCache(2);
+            CommandUsingRequestCache command2b = new CommandUsingRequestCache(2);
+
+            assertTrue(command2a.execute());
+            // this is the first time we've executed this command with the value of "2" so it should not be from cache
+            assertFalse(command2a.isResponseFromCache());
+
+            assertTrue(command2b.execute());
+            // this is the second time we've executed this command with the same value so it should return from cache
+            assertTrue(command2b.isResponseFromCache());
+        } finally {
+            context.shutdown();
         }
     }
 

@@ -45,16 +45,23 @@ public class CommandHelloWorld extends HystrixCommand<String> {
         return "Hello " + name + "!";
     }
 
+    public static void main(String[] args) {
+        System.out.println(new CommandHelloWorld("World").execute());
+        System.out.println(new CommandHelloWorld("Bob").execute());
+    }
+
     public static class UnitTest {
 
         @Test
         public void testSynchronous() {
+            // 同步调用
             assertEquals("Hello World!", new CommandHelloWorld("World").execute());
             assertEquals("Hello Bob!", new CommandHelloWorld("Bob").execute());
         }
 
         @Test
         public void testAsynchronous1() throws Exception {
+            // 异步调用阻塞
             assertEquals("Hello World!", new CommandHelloWorld("World").queue().get());
             assertEquals("Hello Bob!", new CommandHelloWorld("Bob").queue().get());
         }

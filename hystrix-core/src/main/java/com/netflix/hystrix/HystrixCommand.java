@@ -267,6 +267,7 @@ public abstract class HystrixCommand<R> extends AbstractCommand<R> implements Hy
 	private final AtomicBoolean interruptOnFutureCancel = new AtomicBoolean(false);
 
 	/**
+     * 核心逻辑
      * Implement this method with code to be executed when {@link #execute()} or {@link #queue()} are invoked.
      * 
      * @return R response type
@@ -369,6 +370,7 @@ public abstract class HystrixCommand<R> extends AbstractCommand<R> implements Hy
      * @throws IllegalStateException
      *             if invoked more than once
      */
+    @Override
     public Future<R> queue() {
         /*
          * The Future returned by Observable.toBlocking().toFuture() does not implement the
